@@ -53,10 +53,29 @@ spec:
           volumeMounts:
             - name: scheduler-config
               mountPath: /config
-        {{- end }}      
+        {{- end }}
+          {{- if .Values.scheduler.livenessProbe }}
+          livenessProbe:
+            failureThreshold: 8
+            httpGet:
+              path: /healthz
+              port: 10259
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 15
+          {{- end }}
         - name: vgpu-scheduler-extender
           image: {{ .Values.scheduler.extender.image }}:{{ .Values.version }}
           imagePullPolicy: {{ .Values.scheduler.extender.imagePullPolicy | quote }}
+          env:
+          {{- if .Values.global.managedNodeSelectorEnable }}
+          {{- range $key, $value := .Values.global.managedNodeSelector }}
+            - name: NODE_SELECTOR_{{ $key | upper | replace "-" "_" }}
+              value: "{{ $value }}"
+          {{- end }}
+          {{- end }}
           command:
             - scheduler
             - --resource-name={{ .Values.resourceName }}
@@ -77,11 +96,21 @@ spec:
             - --cambricon-mlu-name={{ .Values.mluResourceName }}
             - --cambricon-mlu-memory={{ .Values.mluResourceMem }}
             - --cambricon-mlu-cores={{ .Values.mluResourceCores }}
-            - --ascend-name={{ .Values.ascendResourceName }}
-            - --ascend-memory={{ .Values.ascendResourceMem }}
             - --overwrite-env={{ .Values.scheduler.overwriteEnv }}
             - --node-scheduler-policy={{ .Values.scheduler.defaultSchedulerPolicy.nodeSchedulerPolicy }}
             - --gpu-scheduler-policy={{ .Values.scheduler.defaultSchedulerPolicy.gpuSchedulerPolicy }}
+            {{- if .Values.devices.ascend.enabled }}
+            - --ascend-config-file=/ascend-config.yaml
+            - --enable-ascend=true
+            {{- end }}
+            {{- if .Values.scheduler.nodeLabelSelector }}
+            - --node-label-selector={{- $first := true -}}
+              {{- range $key, $value := .Values.scheduler.nodeLabelSelector -}}
+              {{- if not $first }},{{ end -}}
+              {{- $key }}={{ $value -}}
+              {{- $first = false -}}
+              {{- end -}}
+            {{- end }}
             {{- range .Values.scheduler.extender.extraArgs }}
             - {{ . }}
             {{- end }}
@@ -92,6 +121,22 @@ spec:
           volumeMounts:
             - name: tls-config
               mountPath: /tls
+            {{- if .Values.devices.ascend.enabled }}
+            - name: device-config
+              mountPath: /ascend-config.yaml
+              subPath: ascend-config.yaml
+            {{- end }}
+          {{- if .Values.scheduler.livenessProbe }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 443
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          {{- end }}
       volumes:
         - name: tls-config
           secret:
@@ -104,6 +149,11 @@ spec:
             {{- else }}
             name: {{ template "hami-vgpu.scheduler" . }}
             {{- end }}
+        {{- end }}
+        {{- if .Values.devices.ascend.enabled }}
+        - name: device-config
+          configMap:
+            name: {{ include "hami-vgpu.scheduler" . }}-device
         {{- end }}
       {{- if .Values.scheduler.nodeSelector }}
       nodeSelector: {{ toYaml .Values.scheduler.nodeSelector | nindent 8 }}

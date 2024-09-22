@@ -3,7 +3,7 @@
 nameOverride: ""
 fullnameOverride: ""
 imagePullSecrets: [ ]
-version: "v2.3.12"
+version: "v2.3.13"
 
 #Nvidia GPU Parameters
 resourceName: "nvidia.com/gpu"
@@ -27,10 +27,6 @@ iluvatarResourceName: "iluvatar.ai/vgpu"
 iluvatarResourceMem: "iluvatar.ai/vcuda-memory"
 iluvatarResourceCore: "iluvatar.ai/vcuda-core"
 
-#Ascend 910B Parameters
-ascendResourceName: "huawei.com/Ascend910"
-ascendResourceMem: "huawei.com/Ascend910-memory"
-
 schedulerName: "hami-scheduler"
 
 podSecurityPolicy:
@@ -40,12 +36,18 @@ global:
   gpuHookPath: /usr/local
   labels: {}
   annotations: {}
+  managedNodeSelectorEnable: false
+  managedNodeSelector:
+    usage: "gpu"
+
 
 scheduler:
   # @param nodeName defines the node name and the nvidia-vgpu-scheduler-scheduler will schedule to the node.
-  # if we install the nvidia-vgpu-scheduler-scheduler as default scheduler, we need to remove the k8s defualt
-  # scheduler pod from the cluster first, we must specified node name to skip the schedule workflow.
+  # if we install the nvidia-vgpu-scheduler-scheduler as default scheduler, we need to remove the k8s default
+  # scheduler pod from the cluster first, we must specify node name to skip the schedule workflow.
   nodeName: ""
+#  nodeLabelSelector:
+#    "gpu": "on"
   defaultMem: 0
   defaultCores: 0
   defaultGPUNum: 1
@@ -54,6 +56,7 @@ scheduler:
     nodeSchedulerPolicy: binpack
     gpuSchedulerPolicy: spread
   metricsBindAddress: ":9395"
+  livenessProbe: false
   leaderElect: true
   kubeScheduler:
     # @param enabled indicate whether to run kube-scheduler container in the scheduler pod, it's true by default.
@@ -74,8 +77,6 @@ scheduler:
       - --debug
       - -v=4
   podAnnotations: {}
-  #nodeSelector: 
-  #  gpu: "on"
   tolerations: []
   #serviceAccountName: "hami-vgpu-scheduler-sa"
   customWebhook:
@@ -85,6 +86,11 @@ scheduler:
     host: 127.0.0.1 # hostname or ip, can be your node'IP if you want to use https://<nodeIP>:<schedulerPort>/<path>
     port: 31998
     path: /webhook
+    whitelistNamespaces:
+    # Specify the namespaces that the webhook will not be applied to.
+      # - default
+      # - kube-system
+      # - istio-system
   patch:
     image: docker.io/jettech/kube-webhook-certgen:v1.5.2
     imageNew: liangjw/kube-webhook-certgen:v1.1.1
@@ -128,3 +134,19 @@ devicePlugin:
     gpu: "on"
   tolerations: []
 
+devices:
+  ascend:
+    enabled: false
+    image: ""
+    imagePullPolicy: IfNotPresent
+    extraArgs: []
+    nodeSelector:
+      ascend: "on"
+    tolerations: []
+    resources:
+      - huawei.com/Ascend910A
+      - huawei.com/Ascend910A-memory
+      - huawei.com/Ascend910B
+      - huawei.com/Ascend910B-memory
+      - huawei.com/Ascend310P
+      - huawei.com/Ascend310P-memory

@@ -23,6 +23,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -231,7 +232,7 @@ func (plugin *NvidiaDevicePlugin) Register() error {
 		Endpoint:     path.Base(plugin.socket),
 		ResourceName: string(plugin.rm.Resource()),
 		Options: &kubeletdevicepluginv1beta1.DevicePluginOptions{
-			GetPreferredAllocationAvailable: true,
+			GetPreferredAllocationAvailable: false,
 		},
 	}
 
@@ -245,7 +246,7 @@ func (plugin *NvidiaDevicePlugin) Register() error {
 // GetDevicePluginOptions returns the values of the optional settings for this plugin
 func (plugin *NvidiaDevicePlugin) GetDevicePluginOptions(context.Context, *kubeletdevicepluginv1beta1.Empty) (*kubeletdevicepluginv1beta1.DevicePluginOptions, error) {
 	options := &kubeletdevicepluginv1beta1.DevicePluginOptions{
-		GetPreferredAllocationAvailable: true,
+		GetPreferredAllocationAvailable: false,
 	}
 	return options, nil
 }
@@ -287,10 +288,10 @@ func (plugin *NvidiaDevicePlugin) GetPreferredAllocation(ctx context.Context, r 
 
 // Allocate which return list of devices.
 func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *kubeletdevicepluginv1beta1.AllocateRequest) (*kubeletdevicepluginv1beta1.AllocateResponse, error) {
-	klog.Infoln("Allocate", reqs.ContainerRequests)
+	klog.InfoS("Allocate", "request", reqs)
 	responses := kubeletdevicepluginv1beta1.AllocateResponse{}
 	nodename := os.Getenv(util.NodeNameEnvName)
-	current, err := util.GetPendingPod(nodename)
+	current, err := util.GetPendingPod(ctx, nodename)
 	if err != nil {
 		nodelock.ReleaseNodeLock(nodename, NodeLockNvidia)
 		return &kubeletdevicepluginv1beta1.AllocateResponse{}, err
@@ -382,6 +383,12 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *kubeletdev
 			found := false
 			for _, val := range currentCtr.Env {
 				if strings.Compare(val.Name, "CUDA_DISABLE_CONTROL") == 0 {
+					// if env existed but is set to false or can not be parsed, ignore
+					t, _ := strconv.ParseBool(val.Value)
+					if !t {
+						continue
+					}
+					// only env existed and set to true, we mark it "found"
 					found = true
 					break
 				}
@@ -395,7 +402,7 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *kubeletdev
 			_, err = os.Stat(fmt.Sprintf("%s/vgpu/license", hostHookPath))
 			if err == nil {
 				response.Mounts = append(response.Mounts, &kubeletdevicepluginv1beta1.Mount{
-					ContainerPath: "/vgpu/license",
+					ContainerPath: "/tmp/license",
 					HostPath:      fmt.Sprintf("%s/vgpu/license", hostHookPath),
 					ReadOnly:      true,
 				})

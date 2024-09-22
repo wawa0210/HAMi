@@ -37,11 +37,13 @@ func viewStatus(usage NodeUsage) {
 
 func checkType(annos map[string]string, d util.DeviceUsage, n util.ContainerDeviceRequest) (bool, bool) {
 	//General type check, NVIDIA->NVIDIA MLU->MLU
+	klog.Infoln("Type contains", d.Type, n.Type)
 	if !strings.Contains(d.Type, n.Type) {
 		return false, false
 	}
-	for _, val := range device.GetDevices() {
+	for idx, val := range device.GetDevices() {
 		found, pass, numaAssert := val.CheckType(annos, d, n)
+		klog.Infoln("idx", idx, found, pass)
 		if found {
 			return pass, numaAssert
 		}
@@ -197,6 +199,7 @@ func (s *Scheduler) calcScore(nodes *map[string]*NodeUsage, nums util.PodDeviceR
 	for nodeID, node := range *nodes {
 		viewStatus(*node)
 		score := policy.NodeScore{NodeID: nodeID, Devices: make(util.PodDevices), Score: 0}
+		score.ComputeScore(node.Devices)
 
 		//This loop is for different container request
 		ctrfit := false
@@ -225,7 +228,6 @@ func (s *Scheduler) calcScore(nodes *map[string]*NodeUsage, nums util.PodDeviceR
 		}
 
 		if ctrfit {
-			score.ComputeScore(node.Devices)
 			res.NodeList = append(res.NodeList, &score)
 		}
 	}

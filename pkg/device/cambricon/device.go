@@ -63,7 +63,7 @@ var (
 type CambriconDevices struct {
 }
 
-func (dev *CambriconDevices) ParseConfig(fs *flag.FlagSet) {
+func ParseConfig(fs *flag.FlagSet) {
 	fs.StringVar(&MLUResourceCount, "cambricon-mlu-name", "cambricon.com/mlu", "cambricon mlu resource count")
 	fs.StringVar(&MLUResourceMemory, "cambricon-mlu-memory", "cambricon.com/mlu.smlu.vmemory", "cambricon mlu memory resource")
 	fs.StringVar(&MLUResourceCores, "cambricon-mlu-cores", "cambricon.com/mlu.smlu.vcore", "cambricon mlu core resource")
@@ -73,6 +73,10 @@ func InitMLUDevice() *CambriconDevices {
 	util.InRequestDevices[CambriconMLUDevice] = "hami.io/cambricon-mlu-devices-to-allocate"
 	util.SupportDevices[CambriconMLUDevice] = "hami.io/cambricon-mlu-devices-allocated"
 	return &CambriconDevices{}
+}
+
+func (dev *CambriconDevices) CommonWord() string {
+	return CambriconMLUCommonWord
 }
 
 func (dev *CambriconDevices) setNodeLock(node *corev1.Node) error {
@@ -179,7 +183,7 @@ func (dev *CambriconDevices) GetNodeDevices(n corev1.Node) ([]*api.DeviceInfo, e
 	for int64(i)*100 < cards {
 		nodedevices = append(nodedevices, &api.DeviceInfo{
 			Index:   i,
-			Id:      n.Name + "-cambricon-mlu-" + fmt.Sprint(i),
+			ID:      n.Name + "-cambricon-mlu-" + fmt.Sprint(i),
 			Count:   100,
 			Devmem:  int32(memoryTotal * 256 * 100 / cards),
 			Devcore: 100,
@@ -242,20 +246,25 @@ func (dev *CambriconDevices) GenerateResourceRequests(ctr *corev1.Container) uti
 	mluResourceCount := corev1.ResourceName(MLUResourceCount)
 	mluResourceMem := corev1.ResourceName(MLUResourceMemory)
 	mluResourceCores := corev1.ResourceName(MLUResourceCores)
+	for idx, val := range ctr.Resources.Limits {
+		klog.Infoln("idx=", idx, "val=", val, ctr.Resources.Limits[mluResourceMem])
+	}
 	v, ok := ctr.Resources.Limits[mluResourceCount]
 	if !ok {
 		v, ok = ctr.Resources.Requests[mluResourceCount]
 	}
 	if ok {
 		if n, ok := v.AsInt64(); ok {
-			klog.Info("Found iluvatar devices")
+			klog.Info("Found cambricon devices")
 			memnum := 0
 			mem, ok := ctr.Resources.Limits[mluResourceMem]
 			if !ok {
 				mem, ok = ctr.Resources.Requests[mluResourceMem]
 			}
+			klog.Infoln("mluResourceMem", mem, "ok=", ok, "memoryname=", mluResourceMem)
 			if ok {
 				memnums, ok := mem.AsInt64()
+				klog.Infoln("mluResourceMem", mem, memnums)
 				if ok {
 					memnum = int(memnums) * 256
 				}

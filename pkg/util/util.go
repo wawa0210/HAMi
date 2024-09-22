@@ -28,6 +28,7 @@ import (
 
 	"github.com/Project-HAMi/HAMi/pkg/api"
 	"github.com/Project-HAMi/HAMi/pkg/util/client"
+	"github.com/Project-HAMi/HAMi/pkg/util/nodelock"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,12 +61,27 @@ func GetNode(nodename string) (*corev1.Node, error) {
 	return n, err
 }
 
-func GetPendingPod(node string) (*corev1.Pod, error) {
-	podlist, err := client.GetClient().CoreV1().Pods("").List(context.Background(), metav1.ListOptions{})
+func GetPendingPod(ctx context.Context, node string) (*corev1.Pod, error) {
+	pod, err := GetAllocatePodByNode(ctx, node)
+	if err != nil {
+		return nil, err
+	}
+	if pod != nil {
+		return pod, nil
+	}
+	// filter pods for this node.
+	selector := fmt.Sprintf("spec.nodeName=%s", node)
+	podListOptions := metav1.ListOptions{
+		FieldSelector: selector,
+	}
+	podlist, err := client.GetClient().CoreV1().Pods("").List(ctx, podListOptions)
 	if err != nil {
 		return nil, err
 	}
 	for _, p := range podlist.Items {
+		if p.Status.Phase != corev1.PodPending {
+			continue
+		}
 		if _, ok := p.Annotations[BindTimeAnnotations]; !ok {
 			continue
 		}
@@ -87,6 +103,25 @@ func GetPendingPod(node string) (*corev1.Pod, error) {
 	return nil, fmt.Errorf("no binding pod found on node %s", node)
 }
 
+func GetAllocatePodByNode(ctx context.Context, nodeName string) (*corev1.Pod, error) {
+	node, err := client.GetClient().CoreV1().Nodes().Get(ctx, nodeName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	if value, ok := node.Annotations[nodelock.NodeLockKey]; ok {
+		klog.V(2).Infof("node annotation key is %s, value is %s ", nodelock.NodeLockKey, value)
+		_, ns, name, err := nodelock.ParseNodeLock(value)
+		if err != nil {
+			return nil, err
+		}
+		if ns == "" || name == "" {
+			return nil, nil
+		}
+		return client.GetClient().CoreV1().Pods(ns).Get(ctx, name, metav1.GetOptions{})
+	}
+	return nil, nil
+}
+
 func DecodeNodeDevices(str string) ([]*api.DeviceInfo, error) {
 	if !strings.Contains(str, OneContainerMultiDeviceSplitSymbol) {
 		return []*api.DeviceInfo{}, errors.New("node annotations not decode successfully")
@@ -103,7 +138,7 @@ func DecodeNodeDevices(str string) ([]*api.DeviceInfo, error) {
 				health, _ := strconv.ParseBool(items[6])
 				numa, _ := strconv.Atoi(items[5])
 				i := api.DeviceInfo{
-					Id:      items[0],
+					ID:      items[0],
 					Count:   int32(count),
 					Devmem:  int32(devmem),
 					Devcore: int32(devcore),
@@ -123,10 +158,24 @@ func DecodeNodeDevices(str string) ([]*api.DeviceInfo, error) {
 func EncodeNodeDevices(dlist []*api.DeviceInfo) string {
 	tmp := ""
 	for _, val := range dlist {
-		tmp += val.Id + "," + strconv.FormatInt(int64(val.Count), 10) + "," + strconv.Itoa(int(val.Devmem)) + "," + strconv.Itoa(int(val.Devcore)) + "," + val.Type + "," + strconv.Itoa(val.Numa) + "," + strconv.FormatBool(val.Health) + OneContainerMultiDeviceSplitSymbol
+		tmp += val.ID + "," + strconv.FormatInt(int64(val.Count), 10) + "," + strconv.Itoa(int(val.Devmem)) + "," + strconv.Itoa(int(val.Devcore)) + "," + val.Type + "," + strconv.Itoa(val.Numa) + "," + strconv.FormatBool(val.Health) + OneContainerMultiDeviceSplitSymbol
 	}
 	klog.Infof("Encoded node Devices: %s", tmp)
 	return tmp
+}
+
+func MarshalNodeDevices(dlist []*api.DeviceInfo) string {
+	data, err := json.Marshal(dlist)
+	if err != nil {
+		return ""
+	}
+	return string(data)
+}
+
+func UnMarshalNodeDevices(str string) ([]*api.DeviceInfo, error) {
+	var dlist []*api.DeviceInfo
+	err := json.Unmarshal([]byte(str), &dlist)
+	return dlist, err
 }
 
 func EncodeContainerDevices(cd ContainerDevices) string {

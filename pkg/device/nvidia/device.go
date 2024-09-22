@@ -68,7 +68,11 @@ func InitNvidiaDevice() *NvidiaGPUDevices {
 	return &NvidiaGPUDevices{}
 }
 
-func (dev *NvidiaGPUDevices) ParseConfig(fs *flag.FlagSet) {
+func (dev *NvidiaGPUDevices) CommonWord() string {
+	return NvidiaGPUCommonWord
+}
+
+func ParseConfig(fs *flag.FlagSet) {
 	fs.StringVar(&ResourceName, "resource-name", "nvidia.com/gpu", "resource name")
 	fs.StringVar(&ResourceMem, "resource-mem", "nvidia.com/gpumem", "gpu memory to allocate")
 	fs.StringVar(&ResourceMemPercentage, "resource-mem-percentage", "nvidia.com/gpumem-percentage", "gpu memory fraction to allocate")
@@ -96,7 +100,7 @@ func (dev *NvidiaGPUDevices) LockNode(n *corev1.Node, p *corev1.Pod) error {
 	if !found {
 		return nil
 	}
-	return nodelock.LockNode(n.Name, NodeLockNvidia)
+	return nodelock.LockNode(n.Name, NodeLockNvidia, p)
 }
 
 func (dev *NvidiaGPUDevices) ReleaseNodeLock(n *corev1.Node, p *corev1.Pod) error {

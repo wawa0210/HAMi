@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Project-HAMi/HAMi/pkg/device"
 	"github.com/Project-HAMi/HAMi/pkg/device/nvidia"
 	"github.com/Project-HAMi/HAMi/pkg/scheduler/policy"
 	"github.com/Project-HAMi/HAMi/pkg/util"
@@ -122,6 +123,7 @@ test case matrix.
 func Test_Filter(t *testing.T) {
 	s := NewScheduler()
 	client.KubeClient = fake.NewSimpleClientset()
+	s.kubeClient = client.KubeClient
 	informerFactory := informers.NewSharedInformerFactoryWithOptions(client.KubeClient, time.Hour*1)
 	s.podLister = informerFactory.Core().V1().Pods().Lister()
 	informer := informerFactory.Core().V1().Pods().Informer()
@@ -132,6 +134,8 @@ func Test_Filter(t *testing.T) {
 	})
 	informerFactory.Start(s.stopCh)
 	informerFactory.WaitForCacheSync(s.stopCh)
+	s.addAllEventHandlers()
+	device.InitDevices()
 
 	pod1 := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -221,9 +225,9 @@ func Test_Filter(t *testing.T) {
 		nodes, _ := s.ListNodes()
 		for index := range nodes {
 			node := nodes[index]
-			s.rmNodeDevice(node.ID, node)
+			s.rmNodeDevice(node.ID, node, nvidia.NvidiaGPUDevice)
 		}
-		pods, _ := s.ListPods()
+		pods, _ := s.ListPodsUID()
 		for index := range pods {
 			s.delPod(pods[index])
 		}
@@ -232,24 +236,26 @@ func Test_Filter(t *testing.T) {
 			ID: "node1",
 			Devices: []util.DeviceInfo{
 				{
-					ID:      "device1",
-					Index:   0,
-					Count:   10,
-					Devmem:  8000,
-					Devcore: 100,
-					Numa:    0,
-					Type:    nvidia.NvidiaGPUDevice,
-					Health:  true,
+					ID:           "device1",
+					Index:        0,
+					Count:        10,
+					Devmem:       8000,
+					Devcore:      100,
+					Numa:         0,
+					Type:         nvidia.NvidiaGPUDevice,
+					Health:       true,
+					DeviceVendor: nvidia.NvidiaGPUDevice,
 				},
 				{
-					ID:      "device2",
-					Index:   1,
-					Count:   10,
-					Devmem:  8000,
-					Devcore: 100,
-					Numa:    0,
-					Type:    nvidia.NvidiaGPUDevice,
-					Health:  true,
+					ID:           "device2",
+					Index:        1,
+					Count:        10,
+					Devmem:       8000,
+					Devcore:      100,
+					Numa:         0,
+					Type:         nvidia.NvidiaGPUDevice,
+					Health:       true,
+					DeviceVendor: nvidia.NvidiaGPUDevice,
 				},
 			},
 		})
