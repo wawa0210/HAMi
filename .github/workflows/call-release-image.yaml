@@ -1,4 +1,4 @@
-name: Release Image
+name: Call Release Image
 
 env:
   REGISTRY: docker.io
