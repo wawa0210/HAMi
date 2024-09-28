@@ -2,8 +2,27 @@ apiVersion: v1
 entries:
   hami:
   - apiVersion: v2
+    appVersion: 0.37.0
+    created: "2024-09-28T06:26:56.159234019Z"
+    description: Heterogeneous AI Computing Virtualization Middleware
+    digest: 7024747f6005f09a2a14f0642d41b8a1f1830301467223d43e02b3ca1d10e629
+    keywords:
+    - vgpu
+    - gpu
+    kubeVersion: '>= 1.16.0'
+    maintainers:
+    - email: limengxuan@4paradigm.com
+      name: limengxuan
+    - email: xiaozhang0210@hotmail.com
+      name: zhangxiao
+    name: hami
+    type: application
+    urls:
+    - https://wawa0210.github.io/HAMi/charts/hami-0.37.0.tgz
+    version: 0.37.0
+  - apiVersion: v2
     appVersion: 0.36.0
-    created: "2024-09-25T06:22:37.808873989Z"
+    created: "2024-09-28T06:26:56.158549707Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: a2631a7a10f4e522836856f8b8d0dff954dbad44f7735c8d98cfdf6ab821ed9d
     keywords:
@@ -22,7 +41,7 @@ entries:
     version: 0.36.0
   - apiVersion: v2
     appVersion: 0.35.0
-    created: "2024-09-25T06:22:37.808165795Z"
+    created: "2024-09-28T06:26:56.15786292Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: eb195610b2c669e83bceb450855e24f726b6d3e3b02c47d6dd77f8ccb463ffdd
     keywords:
@@ -41,7 +60,7 @@ entries:
     version: 0.35.0
   - apiVersion: v2
     appVersion: 0.34.0
-    created: "2024-09-25T06:22:37.807421844Z"
+    created: "2024-09-28T06:26:56.157146108Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: c84eb8323a62df916f47689320593b15ad2a0464a319edf3dbe37b192ee6d4f9
     keywords:
@@ -60,7 +79,7 @@ entries:
     version: 0.34.0
   - apiVersion: v2
     appVersion: 0.33.0
-    created: "2024-09-25T06:22:37.806687352Z"
+    created: "2024-09-28T06:26:56.156419446Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: 63a92329097a361d0993fd28578c8ee255e2bd2afc122c1100628d3c1300a366
     keywords:
@@ -79,7 +98,7 @@ entries:
     version: 0.33.0
   - apiVersion: v2
     appVersion: 0.32.0
-    created: "2024-09-25T06:22:37.805953831Z"
+    created: "2024-09-28T06:26:56.155691833Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: bda3cba279741217ea71af8ec44115e5fc1788cba1351a0ed142c7623d921207
     keywords:
@@ -98,7 +117,7 @@ entries:
     version: 0.32.0
   - apiVersion: v2
     appVersion: 0.31.0
-    created: "2024-09-25T06:22:37.805226071Z"
+    created: "2024-09-28T06:26:56.154132796Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: 3f3bbf1fcc3ed38c7e90deb55d92deddbe509d75ffc307c74cfb83544b00f14c
     keywords:
@@ -117,7 +136,7 @@ entries:
     version: 0.31.0
   - apiVersion: v2
     appVersion: 0.30.0
-    created: "2024-09-25T06:22:37.796625036Z"
+    created: "2024-09-28T06:26:56.153408299Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: 3c021733ab828c04b53a894ae19bb9a6be8a4f8f8d73dd6d0c8bd5ab8a7c408b
     keywords:
@@ -136,7 +155,7 @@ entries:
     version: 0.30.0
   - apiVersion: v2
     appVersion: 0.29.0
-    created: "2024-09-25T06:22:37.795847883Z"
+    created: "2024-09-28T06:26:56.152722243Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: c9c2ef57e461a14262a73fb021cd4064483a817a037680188ba4c451ff836e24
     keywords:
@@ -155,7 +174,7 @@ entries:
     version: 0.29.0
   - apiVersion: v2
     appVersion: 0.28.0
-    created: "2024-09-25T06:22:37.795159376Z"
+    created: "2024-09-28T06:26:56.151979222Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: 2d9708990d2c658d064aa709a24510d06597dc9877090e125c7bde1cd1dc1d30
     keywords:
@@ -174,7 +193,7 @@ entries:
     version: 0.28.0
   - apiVersion: v2
     appVersion: 0.27.0
-    created: "2024-09-25T06:22:37.794431777Z"
+    created: "2024-09-28T06:26:56.151233104Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: f3ae5fe1404052ecdd4dfd95c8bd68b35ff0063551df05df52626a822a6e0e4b
     keywords:
@@ -193,7 +212,7 @@ entries:
     version: 0.27.0
   - apiVersion: v2
     appVersion: 0.26.0
-    created: "2024-09-25T06:22:37.79372727Z"
+    created: "2024-09-28T06:26:56.150442142Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: 0d35a930903c294361c7753dd4ea196e935c547336ba3b6b948b70584085e8b7
     keywords:
@@ -212,7 +231,7 @@ entries:
     version: 0.26.0
   - apiVersion: v2
     appVersion: 0.25.0
-    created: "2024-09-25T06:22:37.793007054Z"
+    created: "2024-09-28T06:26:56.149710601Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: d157b0123d85599390823c0e32088942816f89a0e40efc3ee0997be7cd9bf70b
     keywords:
@@ -231,7 +250,7 @@ entries:
     version: 0.25.0
   - apiVersion: v2
     appVersion: 0.24.0
-    created: "2024-09-25T06:22:37.792278322Z"
+    created: "2024-09-28T06:26:56.148948624Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: b2ddebb334fffa0a61a49e89512b6697a4c14aed933f174101b8def53e0749dd
     keywords:
@@ -250,7 +269,7 @@ entries:
     version: 0.24.0
   - apiVersion: v2
     appVersion: 0.23.0
-    created: "2024-09-25T06:22:37.791549109Z"
+    created: "2024-09-28T06:26:56.148014855Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: 9a78579d2a7aff3918ed228c0fe23c3fc3a47740421c8b9f45e7218ecc4ca13d
     keywords:
@@ -269,7 +288,7 @@ entries:
     version: 0.23.0
   - apiVersion: v2
     appVersion: 0.22.0
-    created: "2024-09-25T06:22:37.790774251Z"
+    created: "2024-09-28T06:26:56.138396262Z"
     description: Heterogeneous AI Computing Virtualization Middleware
     digest: c1572ee1edd3e2179756574abe504060cc6c979e53da7c2b7f66d189bfcf1824
     keywords:
@@ -284,4 +303,4 @@ entries:
     urls:
     - https://wawa0210.github.io/HAMi/charts/hami-0.22.0.tgz
     version: 0.22.0
-generated: "2024-09-25T06:22:37.789797936Z"
+generated: "2024-09-28T06:26:56.137482179Z"
