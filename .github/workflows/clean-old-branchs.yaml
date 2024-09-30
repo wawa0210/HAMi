@@ -1,0 +1,22 @@
+# This workflow is used to clean up old branches in the repository.
+
+name: Clean Old Branches
+on:
+  schedule:
+    - cron: "0 0 * * *"
+permissions:
+  contents: read  # for actions/checkout to fetch code  
+jobs:
+  housekeeping:
+    name: Cleanup old branches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup Stale Branches
+        uses: cbrgm/cleanup-stale-branches-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          ignore-branches: "master,dev,gh-pages,release-*"
+          last-commit-age-days: 20
+          dry-run: false
+          rate-limit: true
