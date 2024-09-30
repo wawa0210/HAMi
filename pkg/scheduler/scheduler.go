@@ -476,8 +476,8 @@ func (s *Scheduler) Filter(args extenderv1.ExtenderArgs) (*extenderv1.ExtenderFi
 		return nil, err
 	}
 	if len((*nodeScores).NodeList) == 0 {
-		klog.V(4).Infof("All node scores do not meet for pod %v", args.Pod.Name)
-		s.recordScheduleFilterResultEvent(args.Pod, EventReasonFilteringFailed, []string{}, fmt.Errorf("no available node, all node scores do not meet"))
+		scoreMessage := fmt.Errorf("All node scores do not meet for pod %v,UnelectedNodeList:%v", args.Pod.Name, nodeScores.UnelectedNodeList)
+		s.recordScheduleFilterResultEvent(args.Pod, EventReasonFilteringFailed, []string{}, scoreMessage)
 		return &extenderv1.ExtenderFilterResult{
 			FailedNodes: failedNodes,
 		}, nil

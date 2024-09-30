@@ -43,6 +43,11 @@ type Devices interface {
 	CheckHealth(devType string, n *corev1.Node) (bool, bool)
 	NodeCleanUp(nn string) error
 	GetNodeDevices(n corev1.Node) ([]*api.DeviceInfo, error)
+
+	// CheckType checks if the device type is supported and if the device is in the allowed list
+	// It returns a boolean indicating if the device type is supported
+	// a boolean indicating if the device is in the allowed list
+	// and a boolean indicating if the numa binding is enforced.
 	CheckType(annos map[string]string, d util.DeviceUsage, n util.ContainerDeviceRequest) (bool, bool, bool)
 	// CheckUUID is check current device id whether in GPUUseUUID or GPUNoUseUUID set, return true is check success.
 	CheckUUID(annos map[string]string, d util.DeviceUsage) bool

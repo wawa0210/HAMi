@@ -212,6 +212,10 @@ func assertNuma(annos map[string]string) bool {
 	return false
 }
 
+// CheckType checks if the device type is supported and if the device is in the allowed list
+// It returns a boolean indicating if the device type is supported
+// a boolean indicating if the device is in the allowed list
+// and a boolean indicating if the numa binding is enforced.
 func (dev *NvidiaGPUDevices) CheckType(annos map[string]string, d util.DeviceUsage, n util.ContainerDeviceRequest) (bool, bool, bool) {
 	if strings.Compare(n.Type, NvidiaGPUDevice) == 0 {
 		return true, checkGPUtype(annos, d.Type), assertNuma(annos)

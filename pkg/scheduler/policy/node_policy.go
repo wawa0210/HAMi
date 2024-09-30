@@ -27,11 +27,15 @@ type NodeScore struct {
 	Devices util.PodDevices
 	// Score recode every node all device user/allocate score
 	Score float32
+	// Reason is the reason why the node is selected or not.
+	Reason string
 }
 
 type NodeScoreList struct {
 	NodeList []*NodeScore
 	Policy   string
+	// UnelectedNodeList is the node that cannot be selected
+	UnelectedNodeList []*NodeScore
 }
 
 func (l NodeScoreList) Len() int {

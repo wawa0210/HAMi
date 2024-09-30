@@ -22,7 +22,6 @@ import (
 	"github.com/Project-HAMi/HAMi/pkg/device/nvidia"
 	"github.com/Project-HAMi/HAMi/pkg/scheduler/policy"
 	"github.com/Project-HAMi/HAMi/pkg/util"
-
 	"gotest.tools/v3/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -1104,6 +1103,57 @@ func Test_calcScore(t *testing.T) {
 				assert.DeepEqual(t, wantI.NodeID, gotI.NodeID)
 				assert.DeepEqual(t, wantI.Devices, gotI.Devices)
 				assert.DeepEqual(t, wantI.Score, gotI.Score)
+			}
+		})
+	}
+}
+
+func Test_getMemoryRequest(t *testing.T) {
+	type args struct {
+		request *util.ContainerDeviceRequest
+		device  util.DeviceUsage
+	}
+	tests := []struct {
+		name string
+		args args
+		want int32
+	}{
+		// TODO: Add test cases.
+		{
+			name: "test1",
+			args: args{
+				request: &util.ContainerDeviceRequest{
+					Nums:             1,
+					Type:             nvidia.NvidiaGPUDevice,
+					Memreq:           1000,
+					MemPercentagereq: 101,
+				},
+				device: util.DeviceUsage{
+					Totalmem: 8000,
+				},
+			},
+			want: 0,
+		},
+		{
+			name: "test2",
+			args: args{
+				request: &util.ContainerDeviceRequest{
+					Nums:             1,
+					Type:             nvidia.NvidiaGPUDevice,
+					Memreq:           0,
+					MemPercentagereq: 101,
+				},
+				device: util.DeviceUsage{
+					Totalmem: 8000,
+				},
+			},
+			want: 8000,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getMemoryRequest(tt.args.request, tt.args.device); got != tt.want {
+				t.Errorf("getMemoryRequest() = %v, want %v", got, tt.want)
 			}
 		})
 	}
